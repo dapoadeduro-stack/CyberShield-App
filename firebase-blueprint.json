@@ -1,0 +1,76 @@
+{
+  "entities": {
+    "users": {
+      "title": "User",
+      "description": "User profile and progress tracking",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "admin"] },
+        "level": { "type": "string", "enum": ["100", "200", "300", "400", "professional"] },
+        "points": { "type": "number" },
+        "completedModules": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role", "level", "points"]
+    },
+    "courses": {
+      "title": "Course",
+      "description": "Cyber Security course information",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "level": { "type": "string", "enum": ["100", "200", "300", "400", "professional"] },
+        "category": { "type": "string" },
+        "points": { "type": "number" },
+        "modules": { "type": "array", "items": { "$ref": "modules" } },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "level", "points"]
+    },
+    "modules": {
+      "title": "Module",
+      "description": "Individual learning module within a course",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "courseId": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "order": { "type": "number" },
+        "quiz": { "type": "array", "items": { "$ref": "quizQuestions" } }
+      },
+      "required": ["courseId", "title", "content", "order"]
+    },
+    "quizQuestions": {
+      "title": "Quiz Question",
+      "description": "Question for a module quiz",
+      "type": "object",
+      "properties": {
+        "question": { "type": "string" },
+        "options": { "type": "array", "items": { "type": "string" } },
+        "correctAnswer": { "type": "number" }
+      },
+      "required": ["question", "options", "correctAnswer"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "users",
+      "description": "User profile and progress"
+    },
+    "/courses/{courseId}": {
+      "schema": "courses",
+      "description": "Course definitions"
+    },
+    "/courses/{courseId}/modules/{moduleId}": {
+      "schema": "modules",
+      "description": "Modules within a course"
+    }
+  }
+}

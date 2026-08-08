@@ -1,0 +1,57 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "dapoadeduro@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'role', 'level', 'points']) &&
+             data.uid is string &&
+             data.email is string &&
+             data.role in ['student', 'admin'] &&
+             data.level in ['100', '200', '300', '400', 'professional'] &&
+             data.points is number;
+    }
+
+    function isValidCourse(data) {
+      return data.keys().hasAll(['title', 'level', 'points']) &&
+             data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             data.level in ['100', '200', '300', '400', 'professional'] &&
+             data.points is number;
+    }
+
+    // ===============================================================
+    // Routes
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && request.resource.data.role == 'student';
+      allow update: if isAuthenticated() && (isOwner(userId) || isAdmin()) && isValidUser(request.resource.data);
+    }
+
+    match /courses/{courseId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() && isValidCourse(request.resource.data);
+      
+      match /modules/{moduleId} {
+        allow read: if isAuthenticated();
+        allow write: if isAdmin();
+      }
+    }
+  }
+}
