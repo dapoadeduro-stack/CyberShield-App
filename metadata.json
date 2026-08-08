@@ -1,5 +1,8 @@
 {
   "name": "CyberShield Academy",
   "description": "A structured eLearning platform for Cyber Security students and professionals.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }
